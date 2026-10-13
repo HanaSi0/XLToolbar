@@ -47,4 +47,11 @@ foreach (var (title, label) in new[] { ("FPS", "44"), ("性能", "FPS: 44"), ("f
     Check(ToolbarEntryPolicy.IsFps(title, label), "Duplicate FPS entry not filtered");
 foreach (var (title, label) in new[] { ("周边人数", "1 / 区域"), ("点卡", "10/16 23:00"), ("AI", "关"), ("DPS", "伤害 44000"), ("插件", "-1 毫秒") })
     Check(!ToolbarEntryPolicy.IsFps(title, label), "Unrelated DTR entry filtered");
+var menu = new[] { new GameMenuEntry(1, "角色", 100), new GameMenuEntry(2, "技能菜单", 200), new GameMenuEntry(3, "物品", 300), new GameMenuEntry(4, "", 0) };
+Check(GameMenuPolicy.Filter(menu, "").Length == 3, "Empty commands shown");
+Check(GameMenuPolicy.Filter(menu, "  技能  ").Single().Id == 2, "Menu search failed");
+Check(GameMenuPolicy.Filter(menu, "不存在").Length == 0, "No-match menu search failed");
+Check(GameMenuPolicy.Favorites(menu, new HashSet<uint> { 3, 1, 999 }).Select(e => e.Id).SequenceEqual(new uint[] { 1, 3 }), "Favorite IDs, order or stale IDs mishandled");
+Check(GameMenuPolicy.Favorites(GameMenuPolicy.Filter(menu, "物品"), new HashSet<uint> { 1, 3 }).Single().Id == 3, "Favorite search failed");
+Check(GameMenuPolicy.Favorites(menu, new HashSet<uint>()).Length == 0, "Empty favorites failed");
 Console.WriteLine($"Passed {checks} assertions: wrapping, pinning, bounds, non-overlap, and missing icon fallback.");

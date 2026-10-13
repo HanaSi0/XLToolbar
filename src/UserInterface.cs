@@ -30,7 +30,7 @@ internal sealed partial class UserInterface(Plugin plugin)
         effectsOpen = tribesOpen = onlineOpen = jobsOpen = equipmentOpen = currencyOpen = volumeOpen = false;
         commandsOpen = teleportOpen = gameWindowsOpen = false;
         gearsets.Clear(); currencies.Clear(); teleportRows.Clear(); currencyRead = default;
-        notice = ""; topIconCache.Clear();
+        notice = ""; topIconCache.Clear(); gameMenuEntries = null;
     }
 
     internal void Draw()
@@ -137,23 +137,4 @@ internal sealed partial class UserInterface(Plugin plugin)
         finally { ImGui.End(); }
     }
 
-    private void DrawGameWindows()
-    {
-        var visible = BeginPanel("游戏功能", ref gameWindowsOpen, new Vector2(520, 620));
-        try
-        {
-            if (!visible) return;
-            ImGui.InputTextWithHint("##game-search", "搜索游戏功能", ref gameWindowSearch, 100);
-            foreach (var entry in Plugin.Data.GetExcelSheet<MainCommand>().OrderBy(x => x.RowId))
-            {
-                var label = entry.Name.ToString();
-                if (string.IsNullOrWhiteSpace(label) || !label.Contains(gameWindowSearch, StringComparison.OrdinalIgnoreCase)) continue;
-                var enabled = GameBridge.MainCommandEnabled(entry.RowId);
-                ImGui.BeginDisabled(!enabled);
-                if (ImGui.Selectable(label + "###game" + entry.RowId)) OpenGame(entry.RowId);
-                ImGui.EndDisabled();
-            }
-        }
-        finally { EndPanel(); }
-    }
 }

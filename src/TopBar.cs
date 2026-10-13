@@ -76,6 +76,7 @@ internal sealed partial class UserInterface
         items.AddRange([
             new TopItem(volumeText, () => volumeOpen = !volumeOpen, Key: "sound"),
             new TopItem($"LT {DateTime.Now:HH:mm} / ET {et.Hours:00}:{et.Minutes:00}", Key: "clock"),
+            new TopItem("游戏菜单", () => gameWindowsOpen = !gameWindowsOpen, Key: "gamemenu"),
             new TopItem("设置", () => SettingsOpen = true, Key:"settings"),
         ]);
         items.RemoveAll(item => item.Key is not null && !C.TopSections.GetValueOrDefault(item.Key, true));

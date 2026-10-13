@@ -20,6 +20,7 @@ public sealed class Configuration : IPluginConfiguration
     public Vector3 ForegroundColor { get; set; } = new(.95f, .97f, 1);
     public Dictionary<string, bool> TopPinned { get; set; } = new()
     { ["currency"] = true, ["equipment"] = true, ["fps"] = true, ["sound"] = true, ["clock"] = true };
+    public HashSet<uint> FavoriteGameCommands { get; set; } = [];
     public Dictionary<string, bool> TopSections { get; set; } = [];
     public static readonly Dictionary<string, string> TopLabels = new()
     {
@@ -27,11 +28,12 @@ public sealed class Configuration : IPluginConfiguration
         ["jobs"] = "职业套装", ["currency"] = "货币", ["teleport"] = "传送",
         ["map"] = "地图/区域", ["inventory"] = "背包",
         ["quests"] = "任务/任务情报", ["fps"] = "FPS", ["dtr"] = "其他插件 DTR",
-        ["sound"] = "音量", ["clock"] = "LT/ET", ["settings"] = "设置",
+        ["sound"] = "音量", ["clock"] = "LT/ET", ["gamemenu"] = "游戏菜单", ["settings"] = "设置",
     };
 
     public void Normalize()
     {
+        FavoriteGameCommands ??= [];
         TopPinned ??= [];
         TopSections ??= [];
         if (Version < 2)
