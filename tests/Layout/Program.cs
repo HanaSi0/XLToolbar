@@ -43,4 +43,8 @@ var pinned = TopBarLayout.Arrange(1000, 8, [100, 100], [120, 80]);
 Check(Math.Abs(pinned.Slots.Where(x => x.Right).Max(x => x.X + x.Width) - 1000) < .001, "Pinned group not right aligned");
 Check(TopIconPolicy.Find(new[] { 1, 2 }, x => x == 3, _ => throw new Exception("Dereferenced missing row")) == 0, "Missing icon fallback");
 Check(TopIconPolicy.Find(new[] { 1, 2 }, x => x == 2, x => x * 100) == 200, "Wrong icon match");
+foreach (var (title, label) in new[] { ("FPS", "44"), ("性能", "FPS: 44"), ("fps counter", "53"), ("帧率", "60"), ("performance", "Framerate: 60"), ("性能监控", "44帧/秒") })
+    Check(ToolbarEntryPolicy.IsFps(title, label), "Duplicate FPS entry not filtered");
+foreach (var (title, label) in new[] { ("周边人数", "1 / 区域"), ("点卡", "10/16 23:00"), ("AI", "关"), ("DPS", "伤害 44000"), ("插件", "-1 毫秒") })
+    Check(!ToolbarEntryPolicy.IsFps(title, label), "Unrelated DTR entry filtered");
 Console.WriteLine($"Passed {checks} assertions: wrapping, pinning, bounds, non-overlap, and missing icon fallback.");

@@ -6,7 +6,7 @@ namespace XLToolbar;
 [Serializable]
 public sealed class Configuration : IPluginConfiguration
 {
-    public int Version { get; set; } = 1;
+    public int Version { get; set; } = 2;
     public bool Enabled { get; set; } = true;
     public bool NativeInteractions { get; set; } = true;
     public bool LockWindows { get; set; }
@@ -24,21 +24,35 @@ public sealed class Configuration : IPluginConfiguration
     public static readonly Dictionary<string, string> TopLabels = new()
     {
         ["effects"] = "特效", ["tribes"] = "部族", ["online"] = "在线状态", ["equipment"] = "装备",
-        ["jobs"] = "职业套装", ["timers"] = "任务情报", ["currency"] = "货币", ["teleport"] = "传送",
-        ["map"] = "地图", ["plugins"] = "插件收纳", ["commands"] = "指令收纳", ["inventory"] = "背包",
-        ["quests"] = "任务", ["zone"] = "区域/天气", ["fps"] = "FPS", ["dtr"] = "其他插件 DTR",
-        ["sound"] = "音量", ["clock"] = "LT/ET", ["lock"] = "布局锁定", ["gamewindows"] = "游戏功能", ["settings"] = "设置",
+        ["jobs"] = "职业套装", ["currency"] = "货币", ["teleport"] = "传送",
+        ["map"] = "地图/区域", ["inventory"] = "背包",
+        ["quests"] = "任务/任务情报", ["fps"] = "FPS", ["dtr"] = "其他插件 DTR",
+        ["sound"] = "音量", ["clock"] = "LT/ET", ["settings"] = "设置",
     };
 
     public void Normalize()
     {
         TopPinned ??= [];
         TopSections ??= [];
+        if (Version < 2)
+        {
+            MergeSection("map", "zone");
+            MergeSection("quests", "timers");
+            Version = 2;
+        }
+        foreach (var key in new[] { "plugins", "commands", "lock", "gamewindows", "zone", "timers" })
+        { TopSections.Remove(key); TopPinned.Remove(key); }
         TopIconSize = Bound(TopIconSize, 14, 32, 20);
         TopGap = Bound(TopGap, 0, 24, 8);
         TopRowPadding = Bound(TopRowPadding, 2, 14, 5);
         TopMaxLabelWidth = Bound(TopMaxLabelWidth, 60, 300, 180);
         foreach (var key in TopLabels.Keys) TopSections.TryAdd(key, true);
+    }
+
+    private void MergeSection(string target, string source)
+    {
+        TopSections[target] = TopSections.GetValueOrDefault(target, true) || TopSections.GetValueOrDefault(source, true);
+        TopPinned[target] = TopPinned.GetValueOrDefault(target) || TopPinned.GetValueOrDefault(source);
     }
 
     private static float Bound(float value, float min, float max, float fallback) =>

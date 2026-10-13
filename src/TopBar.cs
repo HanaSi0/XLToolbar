@@ -15,8 +15,6 @@ internal sealed partial class UserInterface
 {
     private List<TopItem>? cachedTopItems;
     private DateTime nextTopRefresh;
-    private DateTime nextPluginCountRefresh;
-    private int cachedPluginCount;
     private List<TopItem>? layoutTopItems;
     private List<TopItem> layoutLeft=[],layoutRight=[];
     private TopLayout? cachedTopLayout;
@@ -37,11 +35,6 @@ internal sealed partial class UserInterface
             catch (Exception ex) { Plugin.Log.Debug(ex, "顶部状态暂不可用"); }
             lastTelemetry = DateTime.UtcNow;
         }
-        if(DateTime.UtcNow>=nextPluginCountRefresh)
-        {
-            cachedPluginCount=Plugin.Interface.InstalledPlugins.Count(p=>p.IsLoaded);
-            nextPluginCountRefresh=DateTime.UtcNow.AddSeconds(1);
-        }
         var player = Plugin.Objects.LocalPlayer;
         var map = Plugin.Data.GetExcelSheet<Map>().GetRowOrDefault(Plugin.Client.MapId);
         var mapName = map is {} currentMap&&currentMap.PlaceName.IsValid?currentMap.PlaceName.Value.Name.ToString():null;
@@ -59,24 +52,21 @@ internal sealed partial class UserInterface
 
             new(telemetryAvailable ? $"{minimumDurability:F0}% / {maximumSpiritbond:F0}%" : "装备", () => equipmentOpen = !equipmentOpen, "最低装备耐久／最高装备精炼度；右键打开修理", () => OpenAction(6)),
             new(jobName, () => { jobsOpen = !jobsOpen; if (jobsOpen) gearsets = GameBridge.ReadGearsets(); }),
-            new("任务情报", () => OpenGame(5), "打开游戏内任务情报"),
             new(telemetryAvailable ? $"金币 {gil:N0}" : "金币 --", () => currencyOpen = !currencyOpen, "左键：货币；右键：背包", () => OpenGame(10)),
             new("传送面板", () => { teleportOpen = true; RefreshTeleports(); }),
-            new(mapName, () => OpenGame(16)),
-            new($"插件收纳 {cachedPluginCount}", () => Plugin.Interface.OpenPluginInstallerTo(PluginInstallerOpenKind.InstalledPlugins)),
-            new("指令收纳", () => commandsOpen = true),
+            new(mapName, () => OpenGame(16), $"区域 {Plugin.Client.TerritoryType} / 地图 {Plugin.Client.MapId} / 天气 {weather}\n左键：打开地图"),
             new("背包", () => OpenGame(10)),
-            new("任务", () => OpenGame(4)),
-            new($"区域 {Plugin.Client.TerritoryType} / 地图 {Plugin.Client.MapId} / 天气 {weather}"),
+            new("任务", () => OpenGame(4), "左键：任务日志；右键：任务情报", () => OpenGame(5)),
             new($"FPS {ImGui.GetIO().Framerate:F0}"),
         };
-        var topKeys = new[] { "effects", "tribes", "online", "equipment", "jobs", "timers", "currency", "teleport", "map", "plugins", "commands", "inventory", "quests", "zone", "fps" };
+        var topKeys = new[] { "effects", "tribes", "online", "equipment", "jobs", "currency", "teleport", "map", "inventory", "quests", "fps" };
         for (var i = 0; i < items.Count; i++) items[i] = items[i] with { Key = topKeys[i] };
         foreach (var entry in Plugin.Dtr.Entries.Where(e => e.Shown && !e.UserHidden))
         {
             var current = entry;
             var label = current.Text?.TextValue;
             if (string.IsNullOrWhiteSpace(label)) label = current.Title;
+            if (ToolbarEntryPolicy.IsFps(entry.Title, label)) continue;
             items.Add(new TopItem(label,
                 current.HasClickAction ? () => InvokeDtr(current, MouseClickType.Left) : null,
                 current.Tooltip?.TextValue,
@@ -86,8 +76,6 @@ internal sealed partial class UserInterface
         items.AddRange([
             new TopItem(volumeText, () => volumeOpen = !volumeOpen, Key: "sound"),
             new TopItem($"LT {DateTime.Now:HH:mm} / ET {et.Hours:00}:{et.Minutes:00}", Key: "clock"),
-            new TopItem(C.LockWindows ? "解锁布局" : "锁定布局", () => { C.LockWindows = !C.LockWindows; plugin.Save(); }, Key:"lock"),
-            new TopItem("游戏功能", () => gameWindowsOpen = !gameWindowsOpen, Key: "gamewindows"),
             new TopItem("设置", () => SettingsOpen = true, Key:"settings"),
         ]);
         items.RemoveAll(item => item.Key is not null && !C.TopSections.GetValueOrDefault(item.Key, true));
