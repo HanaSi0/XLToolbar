@@ -57,6 +57,9 @@ internal sealed partial class UserInterface
 
     private void EndPanel()
     {
+        if (!C.LockWindows && ImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows) &&
+            !ImGui.IsAnyItemHovered() && !ImGui.IsAnyItemActive() && ImGui.IsMouseDragging(ImGuiMouseButton.Left))
+            ImGui.SetWindowPos(ImGui.GetWindowPos() + ImGui.GetIO().MouseDelta);
         ImGui.End();
         ImGui.PopStyleColor(11);
         ImGui.PopStyleVar(5);
@@ -92,7 +95,7 @@ internal sealed partial class UserInterface
         var scale = ImGuiHelpers.GlobalScale;
         ImGui.SetNextWindowSize(size * scale, ImGuiCond.FirstUseEver);
         ImGui.SetNextWindowSizeConstraints(new Vector2(300, 150) * scale, new Vector2(float.MaxValue));
-        return ImGui.Begin(title + "###XLToolbarPanelV2" + title, ref open, WindowFlags) && open;
+        return ImGui.Begin("###XLToolbarPanelV2" + title, WindowFlags) && open;
     }
 
     private void DrawUtilityPanels()

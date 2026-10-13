@@ -53,7 +53,7 @@ internal sealed partial class UserInterface
             new(telemetryAvailable ? $"{minimumDurability:F0}% / {maximumSpiritbond:F0}%" : "装备", () => equipmentOpen = !equipmentOpen, "最低装备耐久／最高装备精炼度；右键打开修理", () => OpenAction(6)),
             new(jobName, () => { jobsOpen = !jobsOpen; if (jobsOpen) gearsets = GameBridge.ReadGearsets(); }),
             new(telemetryAvailable ? $"金币 {gil:N0}" : "金币 --", () => currencyOpen = !currencyOpen, "左键：货币；右键：背包", () => OpenGame(10)),
-            new("传送面板", () => { teleportOpen = true; RefreshTeleports(); }),
+            new("传送面板", () => { teleportOpen = !teleportOpen; if (teleportOpen) RefreshTeleports(); }),
             new(mapName, () => OpenGame(16), $"区域 {Plugin.Client.TerritoryType} / 地图 {Plugin.Client.MapId} / 天气 {weather}\n左键：打开地图"),
             new("背包", () => OpenGame(10)),
             new("任务", () => OpenGame(4), "左键：任务日志；右键：任务情报", () => OpenGame(5)),
@@ -77,7 +77,7 @@ internal sealed partial class UserInterface
             new TopItem(volumeText, () => volumeOpen = !volumeOpen, Key: "sound"),
             new TopItem($"LT {DateTime.Now:HH:mm} / ET {et.Hours:00}:{et.Minutes:00}", Key: "clock"),
             new TopItem("游戏菜单", () => gameWindowsOpen = !gameWindowsOpen, Key: "gamemenu"),
-            new TopItem("设置", () => SettingsOpen = true, Key:"settings"),
+            new TopItem("设置", () => SettingsOpen = !SettingsOpen, Key:"settings"),
         ]);
         items.RemoveAll(item => item.Key is not null && !C.TopSections.GetValueOrDefault(item.Key, true));
         cachedTopItems=items;DrawTopItems(items);

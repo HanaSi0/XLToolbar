@@ -3,7 +3,7 @@
     "Author": "HanaSi0",
     "Name": "XLToolbar",
     "InternalName": "XLToolbar",
-    "AssemblyVersion": "0.1.5.0",
+    "AssemblyVersion": "0.1.6.0",
     "Description": "游戏图标快捷入口、职业套装、传送、货币、游戏菜单与常用项收藏，以及可固定的状态信息。",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/HanaSi0/XLToolbar",
@@ -18,11 +18,11 @@
     "LoadPriority": 0,
     "Punchline": "独立的游戏顶部快捷工具条。",
     "AcceptsFeedback": true,
-    "DownloadLinkInstall": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.5/XLToolbar.zip",
-    "DownloadLinkUpdate": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.5/XLToolbar.zip",
-    "DownloadLinkTesting": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.5/XLToolbar.zip",
+    "DownloadLinkInstall": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.6/XLToolbar.zip",
+    "DownloadLinkUpdate": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.6/XLToolbar.zip",
+    "DownloadLinkTesting": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.6/XLToolbar.zip",
     "IsHide": false,
     "IsTestingExclusive": false,
-    "LastUpdate": 1791917281
+    "LastUpdate": 1791917391
   }
 ]

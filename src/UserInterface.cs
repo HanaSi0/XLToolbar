@@ -20,7 +20,7 @@ internal sealed partial class UserInterface(Plugin plugin)
     private DateTime lastTelemetry;
     private bool telemetryAvailable;
     private float minimumDurability, maximumSpiritbond;
-    private ImGuiWindowFlags WindowFlags => ImGuiWindowFlags.NoCollapse |
+    private ImGuiWindowFlags WindowFlags => ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse |
         (C.LockWindows ? ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize : ImGuiWindowFlags.None);
 
     internal void Invalidate() { cachedTopItems = null; cachedTopLayout = null; }
@@ -33,8 +33,15 @@ internal sealed partial class UserInterface(Plugin plugin)
         notice = ""; gameMenuEntries = null;
     }
 
+    private void ClosePanels()
+    {
+        effectsOpen = tribesOpen = onlineOpen = jobsOpen = equipmentOpen = currencyOpen = volumeOpen = false;
+        commandsOpen = teleportOpen = gameWindowsOpen = SettingsOpen = false;
+    }
+
     internal void Draw()
     {
+        if (ImGui.IsKeyPressed(ImGuiKey.Escape, false)) ClosePanels();
         if (C.Enabled && Plugin.Client.IsLoggedIn && !Plugin.GameGui.GameUiHidden)
         {
             DrawTop();
