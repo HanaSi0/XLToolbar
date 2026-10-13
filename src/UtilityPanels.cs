@@ -34,11 +34,39 @@ internal sealed partial class UserInterface
         });
     }
 
+    private void PushPanelStyle()
+    {
+        var scale = ImGuiHelpers.GlobalScale;
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(16, 14) * scale);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(10, 6) * scale);
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(10, 9) * scale);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 6 * scale);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4 * scale);
+        ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(.065f, .08f, .10f, .98f));
+        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(.94f, .96f, .98f, 1));
+        ImGui.PushStyleColor(ImGuiCol.TextDisabled, new Vector4(.63f, .70f, .77f, 1));
+        ImGui.PushStyleColor(ImGuiCol.TitleBg, new Vector4(.10f, .13f, .16f, 1));
+        ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(.13f, .18f, .22f, 1));
+        ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(.14f, .18f, .22f, 1));
+        ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(.16f, .23f, .28f, 1));
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(.23f, .36f, .42f, 1));
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(.28f, .45f, .50f, 1));
+        ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(.16f, .29f, .34f, 1));
+        ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(.22f, .36f, .42f, 1));
+    }
+
     private void EndPanel()
     {
-        if (!C.LockWindows && ImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows) && !ImGui.IsAnyItemHovered() && !ImGui.IsAnyItemActive() && ImGui.IsMouseDragging(ImGuiMouseButton.Left))
-            ImGui.SetWindowPos(ImGui.GetWindowPos() + ImGui.GetIO().MouseDelta);
         ImGui.End();
+        ImGui.PopStyleColor(11);
+        ImGui.PopStyleVar(5);
+    }
+
+    private static void PanelSection(string label)
+    {
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(.67f, .85f, .88f, 1), label);
+        ImGui.Separator();
     }
 
     private void DrawVolume()
@@ -60,15 +88,11 @@ internal sealed partial class UserInterface
 
     private bool BeginPanel(string title, ref bool open, Vector2 size)
     {
-        ImGui.SetNextWindowSize(size * ImGuiHelpers.GlobalScale, ImGuiCond.FirstUseEver);
-        var visible = ImGui.Begin(title + "###XLToolbar" + title, WindowFlags);
-        if (visible)
-        {
-            ImGui.TextUnformatted(title); ImGui.SameLine();
-            if (ImGui.SmallButton("关闭")) open = false;
-            ImGui.Separator();
-        }
-        return visible && open;
+        PushPanelStyle();
+        var scale = ImGuiHelpers.GlobalScale;
+        ImGui.SetNextWindowSize(size * scale, ImGuiCond.FirstUseEver);
+        ImGui.SetNextWindowSizeConstraints(new Vector2(300, 150) * scale, new Vector2(float.MaxValue));
+        return ImGui.Begin(title + "###XLToolbarPanelV2" + title, ref open, WindowFlags) && open;
     }
 
     private void DrawUtilityPanels()
@@ -84,16 +108,16 @@ internal sealed partial class UserInterface
 
     private void DrawEffects()
     {
-        var visible = BeginPanel("特效与召唤兽", ref effectsOpen, new Vector2(410, 470));
+        var visible = BeginPanel("特效与召唤兽", ref effectsOpen, new Vector2(700, 620));
         try
         {
             if (!visible) return;
-            ImGui.TextDisabled("读取游戏设置；启用游戏交互后可修改。");
+            PanelSection("战斗特效");
             Effect("自身特效", UiConfigOption.BattleEffectSelf);
             Effect("队友特效", UiConfigOption.BattleEffectParty);
             Effect("其他玩家特效", UiConfigOption.BattleEffectOther);
             Effect("PvP 敌方特效", UiConfigOption.BattleEffectPvPEnemyPc);
-            ImGui.Separator();
+            PanelSection("召唤兽大小");
             Pet("巴哈姆特", UiConfigOption.BahamutSize);
             Pet("凤凰", UiConfigOption.PhoenixSize);
             Pet("迦楼罗", UiConfigOption.GarudaSize);
@@ -108,20 +132,39 @@ internal sealed partial class UserInterface
     {
         if (!Plugin.GameConfig.UiConfig.TryGet(option.ToString(), out uint value)) { ImGui.TextDisabled(name + "：当前客户端不支持"); return; }
         var index = 2 - (int)Math.Clamp(value, 0, 2);
-        ImGui.BeginDisabled(!C.NativeInteractions);
-        if (ImGui.SliderInt(name, ref index, 0, 2, new[] { "关闭", "简单", "完全" }[index]))
-            Native(() => Plugin.GameConfig.UiConfig.Set(option.ToString(), (uint)(2 - index)));
-        ImGui.EndDisabled();
+        ChoiceRow(name, option, index, ["关闭", "简单", "完全"], selected =>
+            Native(() => Plugin.GameConfig.UiConfig.Set(option.ToString(), (uint)(2 - selected))));
     }
 
     private void Pet(string name, UiConfigOption option)
     {
         if (!Plugin.GameConfig.UiConfig.TryGet(option.ToString(), out uint value)) { ImGui.TextDisabled(name + "：当前客户端不支持"); return; }
-        var index = (int)Math.Clamp(value, 0, 2);
-        ImGui.BeginDisabled(!C.NativeInteractions);
-        if (ImGui.SliderInt(name, ref index, 0, 2, new[] { "小", "中", "大" }[index]))
-            Native(() => Plugin.GameConfig.UiConfig.Set(option.ToString(), (uint)index));
-        ImGui.EndDisabled();
+        ChoiceRow(name, option, (int)Math.Clamp(value, 0, 2), ["小", "中", "大"], selected =>
+            Native(() => Plugin.GameConfig.UiConfig.Set(option.ToString(), (uint)selected)));
+    }
+
+    private void ChoiceRow(string name, UiConfigOption option, int selected, string[] choices, System.Action<int> action)
+    {
+        ImGui.PushID(option.ToString());
+        try
+        {
+            ImGui.TextUnformatted(name);
+            ImGui.BeginDisabled(!C.NativeInteractions);
+            try
+            {
+                var width = Math.Max(1, (ImGui.GetContentRegionAvail().X - ImGui.GetStyle().ItemSpacing.X * 2) / 3);
+                for (var i = 0; i < choices.Length; i++)
+                {
+                    if (i > 0) ImGui.SameLine();
+                    if (i == selected) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(.22f, .43f, .47f, 1));
+                    var clicked = ImGui.Button(choices[i], new Vector2(width, 0));
+                    if (i == selected) ImGui.PopStyleColor();
+                    if (clicked) action(i);
+                }
+            }
+            finally { ImGui.EndDisabled(); }
+        }
+        finally { ImGui.PopID(); }
     }
 
     private void DrawTribes()
@@ -152,7 +195,7 @@ internal sealed partial class UserInterface
                 var rankName = rankRow?.Name.ToString() ?? rank.ToString();
                 ImGui.TextDisabled($"{rankName} ({rank}/{tribe.MaxRank})");
                 ImGui.EndGroup();
-                ImGui.ProgressBar(rep.Required == 0 ? 1 : Math.Clamp((float)rep.Current / rep.Required, 0, 1), new Vector2(-1, 10), rep.Required == 0 ? "最高等级" : $"{rep.Current} / {rep.Required}");
+                ImGui.ProgressBar(rep.Required == 0 ? 1 : Math.Clamp((float)rep.Current / rep.Required, 0, 1), new Vector2(-1, 22 * ImGuiHelpers.GlobalScale), rep.Required == 0 ? "最高等级" : $"{rep.Current} / {rep.Required}");
                 var currency = tribe.CurrencyItem.Value;
                 if (currency.RowId != 0) ImGui.TextDisabled($"{currency.Name}：{GameBridge.ItemCount(currency.RowId)}");
                 ImGui.Separator(); ImGui.PopID();
@@ -173,9 +216,9 @@ internal sealed partial class UserInterface
                 var row = Plugin.Data.GetExcelSheet<OnlineStatus>().GetRowOrDefault(id);
                 if (row is null) continue;
                 GameIcon(row.Value.Icon, 28); ImGui.SameLine();
-                if (ImGui.Selectable(row.Value.Name.ToString() + "###online" + id)) Native(() => GameBridge.SetOnlineStatus(id));
+                if (ImGui.Selectable(row.Value.Name.ToString() + "###online" + id, Plugin.Objects.LocalPlayer?.OnlineStatus.RowId == id, ImGuiSelectableFlags.None, new Vector2(0, 32 * ImGuiHelpers.GlobalScale))) Native(() => GameBridge.SetOnlineStatus(id));
             }
-            ImGui.TextWrapped("可用的指导者状态和权限由游戏校验。需启用游戏交互。");
+
             if (ImGui.Button("打开个人信息")) OpenPersonalInfo();
         }
         finally { EndPanel(); }
@@ -188,21 +231,18 @@ internal sealed partial class UserInterface
         {
             if (!visible) return;
             if (ImGui.Button("刷新套装")) gearsets = GameBridge.ReadGearsets();
-            ImGui.TextDisabled("点击切换已保存装备套装；等级来自游戏，装等来自套装记录。");
-            if (ImGui.BeginTable("job-columns", 3, ImGuiTableFlags.SizingStretchSame))
+
+            var columnCount = Math.Clamp((int)(ImGui.GetContentRegionAvail().X / (260 * ImGuiHelpers.GlobalScale)), 1, 3);
+            if (ImGui.BeginTable("job-columns", columnCount, ImGuiTableFlags.SizingStretchSame))
             {
                 try
                 {
-                    ImGui.TableNextRow();
-                    string[][] columns = [["防护职业", "治疗职业"], ["近战职业", "远程物理职业", "远程魔法职业"], ["大地使者", "能工巧匠", "其他职业"]];
-                    for (var column = 0; column < columns.Length; column++)
+                    foreach (var group in new[] { "防护职业", "治疗职业", "近战职业", "远程物理职业", "远程魔法职业", "大地使者", "能工巧匠", "其他职业" })
                     {
-                        ImGui.TableSetColumnIndex(column);
-                        foreach (var group in columns[column])
-                        {
-                            var matching = gearsets.Where(g => JobGroup(g.Job) == group).ToArray();
-                            if (matching.Length == 0) continue;
-                            ImGui.TextColored(new Vector4(C.Tint, 1), group);
+                        var matching = gearsets.Where(g => JobGroup(g.Job) == group).ToArray();
+                        if (matching.Length == 0) continue;
+                        ImGui.TableNextColumn();
+                        PanelSection(group);
                             foreach (var gear in matching)
                             {
                                 var job = Plugin.Data.GetExcelSheet<ClassJob>().GetRowOrDefault(gear.Job);
@@ -212,18 +252,17 @@ internal sealed partial class UserInterface
                                 GameIcon((uint)(62100 + gear.Job), 30); ImGui.SameLine();
                                 var pos = ImGui.GetCursorScreenPos();
                                 var width = ImGui.GetContentRegionAvail().X;
-                                if (ImGui.Selectable("##gearset", false, ImGuiSelectableFlags.None, new Vector2(width, 40 * ImGuiHelpers.GlobalScale)))
+                                if (ImGui.Selectable("##gearset", false, ImGuiSelectableFlags.None, new Vector2(width, 62 * ImGuiHelpers.GlobalScale)))
                                     Native(() => GameBridge.EquipGearset(gear.Index));
                                 var draw = ImGui.GetWindowDrawList();
-                                draw.AddText(pos, 0xFFF4EBE5, job.Value.Name.ToString());
-                                draw.AddText(pos + new Vector2(0, 18 * ImGuiHelpers.GlobalScale), 0xFF90CBE9, $"Lv.{level}");
-                                var ilvl = gear.ItemLevel.ToString();
-                                draw.AddText(pos + new Vector2(Math.Max(0, width - ImGui.CalcTextSize(ilvl).X - 4), 0), 0xFFF4EBE5, ilvl);
+                                draw.PushClipRect(pos, pos + new Vector2(width, 62 * ImGuiHelpers.GlobalScale), true);
+                                draw.AddText(pos, 0xFFF4EBE5, FitTopLabel(gear.Name, width));
+                                draw.AddText(pos + new Vector2(0, 20 * ImGuiHelpers.GlobalScale), 0xFFCEDFD9, FitTopLabel(job.Value.Name.ToString(), width));
+                                draw.AddText(pos + new Vector2(0, 40 * ImGuiHelpers.GlobalScale), 0xFFB9C9D4, $"Lv.{level} · 装等 {gear.ItemLevel}");
+                                draw.PopClipRect();
                                 if (ImGui.IsItemHovered()) ImGui.SetTooltip(gear.Name);
                                 ImGui.PopID();
                             }
-                            ImGui.Spacing();
-                        }
                     }
                 }
                 finally { ImGui.EndTable(); }
@@ -244,19 +283,35 @@ internal sealed partial class UserInterface
 
     private void DrawEquipment()
     {
-        var visible = BeginPanel("装备耐久与精炼度", ref equipmentOpen, new Vector2(480, 620));
+        var visible = BeginPanel("装备耐久与精炼度", ref equipmentOpen, new Vector2(700, 620));
         try
         {
             if (!visible) return;
-            foreach (var item in GameBridge.ReadInventory(InventoryType.EquippedItems))
+            if (ImGui.BeginTable("equipment", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
             {
-                var row = Plugin.Data.GetExcelSheet<Item>().GetRowOrDefault(item.Id);
-                if (row is null) continue;
-                GameIcon(row.Value.Icon, 28); ImGui.SameLine();
-                ImGui.TextUnformatted($"{row.Value.Name}   {item.Condition:F0}% / {item.Spiritbond:F0}%");
+                try
+                {
+                    ImGui.TableSetupColumn("装备", ImGuiTableColumnFlags.WidthStretch, 2);
+                    ImGui.TableSetupColumn("耐久度", ImGuiTableColumnFlags.WidthStretch, 1);
+                    ImGui.TableSetupColumn("精炼度", ImGuiTableColumnFlags.WidthStretch, 1);
+                    ImGui.TableHeadersRow();
+                    var index = 0;
+                    foreach (var item in GameBridge.ReadInventory(InventoryType.EquippedItems))
+                    {
+                        var row = Plugin.Data.GetExcelSheet<Item>().GetRowOrDefault(item.Id);
+                        if (row is null) continue;
+                        ImGui.PushID(index++);
+                        ImGui.TableNextRow(); ImGui.TableSetColumnIndex(0);
+                        GameIcon(row.Value.Icon, 28); ImGui.SameLine();
+                        ImGui.TextWrapped(row.Value.Name.ToString());
+                        ImGui.TableSetColumnIndex(1); PercentageBar(item.Condition, true);
+                        ImGui.TableSetColumnIndex(2); PercentageBar(item.Spiritbond, false);
+                        ImGui.PopID();
+                    }
+                }
+                finally { ImGui.EndTable(); }
             }
-            ImGui.Separator();
-            ImGui.TextDisabled("百分比：耐久／精炼度。耐久可超过 100%。");
+            PanelSection("装备维护");
             if (repairMaterialId is null)
                 repairMaterialId = Plugin.Data.GetExcelSheet<Item>().FirstOrDefault(i => i.Name.ToString() is "8级暗物质" or "Grade 8 Dark Matter").RowId;
             if (repairMaterialId.Value != 0) ImGui.TextDisabled($"8级暗物质 × {GameBridge.ItemCount(repairMaterialId.Value)}");
@@ -270,7 +325,7 @@ internal sealed partial class UserInterface
 
     private void DrawCurrency()
     {
-        var visible = BeginPanel("货币", ref currencyOpen, new Vector2(430, 620));
+        var visible = BeginPanel("货币", ref currencyOpen, new Vector2(680, 620));
         try
         {
             if (!visible) return;
@@ -290,15 +345,30 @@ internal sealed partial class UserInterface
                 weeklyTomes = GameBridge.WeeklyTomestones();
                 currencyRead = DateTime.UtcNow;
             }
-            foreach (var currency in currencies)
+            if (ImGui.BeginTable("wallet", 3, ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingStretchProp))
             {
-                var row = Plugin.Data.GetExcelSheet<Item>().GetRow(currency.Id);
-                GameIcon(row.Icon, 26); ImGui.SameLine();
-                var weekly = currency.Limited ? $" ({weeklyTomes.Acquired:N0} / {weeklyTomes.Limit:N0} 本周)" : "";
-                var cap = currency.Cap == 0 ? "--" : currency.Cap.ToString("N0");
-                ImGui.TextUnformatted($"{row.Name}   {currency.Quantity:N0} / {cap}{weekly}");
+                try
+                {
+                    ImGui.TableSetupColumn("货币", ImGuiTableColumnFlags.WidthStretch, 2);
+                    ImGui.TableSetupColumn("持有 / 上限", ImGuiTableColumnFlags.WidthStretch, 1.5f);
+                    ImGui.TableSetupColumn("本周", ImGuiTableColumnFlags.WidthStretch, 1);
+                    ImGui.TableHeadersRow();
+                    foreach (var currency in currencies)
+                    {
+                        var row = Plugin.Data.GetExcelSheet<Item>().GetRow(currency.Id);
+                        ImGui.TableNextRow(); ImGui.TableSetColumnIndex(0);
+                        GameIcon(row.Icon, 26); ImGui.SameLine(); ImGui.TextWrapped(row.Name.ToString());
+                        ImGui.TableSetColumnIndex(1);
+                        var cap = currency.Cap == 0 ? "—" : currency.Cap.ToString("N0");
+                        ImGui.TextUnformatted($"{currency.Quantity:N0} / {cap}");
+                        ImGui.TableSetColumnIndex(2);
+                        if (currency.Limited) ImGui.TextUnformatted($"{weeklyTomes.Acquired:N0} / {weeklyTomes.Limit:N0}");
+                        else ImGui.TextDisabled("—");
+                    }
+                }
+                finally { ImGui.EndTable(); }
             }
-            ImGui.TextWrapped("货币类物品从游戏表读取上限，军票和本周神典石上限读取专用接口。专用钱包仍可查看原版窗口。");
+            ImGui.Spacing();
             if (ImGui.Button("打开完整货币窗口")) OpenGame(66);
         }
         finally { EndPanel(); }
@@ -361,12 +431,22 @@ internal sealed partial class UserInterface
                 var row = Plugin.Data.GetExcelSheet<Aetheryte>().GetRowOrDefault(item.Id);
                 var name = row?.PlaceName.Value.Name.ToString() ?? $"水晶 {item.Id}";
                 if (!name.Contains(teleportSearch, StringComparison.OrdinalIgnoreCase)) continue;
-                if (ImGui.Selectable($"{name}    {item.Cost:N0} 金币###tp{item.Id}:{item.SubIndex}"))
+                if (ImGui.Selectable($"{name}    {item.Cost:N0} 金币###tp{item.Id}:{item.SubIndex}", false, ImGuiSelectableFlags.None, new Vector2(0, 36 * ImGuiHelpers.GlobalScale)))
                     Native(() => GameBridge.Teleport(item.Id, item.SubIndex));
             }
-            ImGui.TextWrapped("点击请求游戏传送；费用、传送券与可用性以游戏最终确认结果为准。");
+
         }
         finally { EndPanel(); }
+    }
+
+    private static void PercentageBar(float value, bool durability)
+    {
+        var color = durability && value < 25 ? new Vector4(.90f, .36f, .32f, 1)
+            : durability && value < 50 ? new Vector4(.90f, .70f, .30f, 1)
+            : new Vector4(.28f, .65f, .68f, 1);
+        ImGui.PushStyleColor(ImGuiCol.PlotHistogram, color);
+        try { ImGui.ProgressBar(Math.Clamp(value / 100, 0, 1), new Vector2(-1, 24 * ImGuiHelpers.GlobalScale), $"{value:F0}%"); }
+        finally { ImGui.PopStyleColor(); }
     }
 
     private void GameIcon(uint id, float size)

@@ -88,8 +88,7 @@ internal sealed partial class UserInterface(Plugin plugin)
 
     private void DrawSettings()
     {
-        ImGui.SetNextWindowSize(new Vector2(560, 650) * ImGuiHelpers.GlobalScale, ImGuiCond.FirstUseEver);
-        var visible = ImGui.Begin("XLToolbar 设置", ref SettingsOpen, ImGuiWindowFlags.NoCollapse);
+        var visible = BeginPanel("XLToolbar 设置", ref SettingsOpen, new Vector2(580, 780));
         try
         {
             if (!visible) return;
@@ -98,6 +97,7 @@ internal sealed partial class UserInterface(Plugin plugin)
             if (ImGui.Checkbox("显示顶部工具条", ref enabled)) { C.Enabled = enabled; changed = true; }
             var interactions = C.NativeInteractions;
             if (ImGui.Checkbox("启用游戏交互", ref interactions)) { C.NativeInteractions = interactions; changed = true; }
+            PanelSection("工具条外观");
             var icons = C.TopIcons;
             if (ImGui.Checkbox("显示图标", ref icons)) { C.TopIcons = icons; changed = true; }
             var locked = C.LockWindows;
@@ -107,14 +107,14 @@ internal sealed partial class UserInterface(Plugin plugin)
             if (ImGui.SliderFloat("间距", ref gap, 0, 24)) { C.TopGap = gap; changed = true; }
             if (ImGui.SliderFloat("上下留白", ref padding, 2, 14)) { C.TopRowPadding = padding; changed = true; }
             if (ImGui.SliderFloat("文字最大宽度", ref width, 60, 300)) { C.TopMaxLabelWidth = width; changed = true; }
+            PanelSection("工具条背景");
             var background = C.ToolbarBackgroundColor;
             if (ImGui.ColorEdit3("工具条背景颜色", ref background)) { C.ToolbarBackgroundColor = background; changed = true; }
             var opacity = C.ToolbarBackgroundOpacity;
             if (ImGui.SliderFloat("背景不透明度", ref opacity, 0, 1, "%.2f")) { C.ToolbarBackgroundOpacity = opacity; changed = true; }
             ImGui.TextDisabled("0 完全透明，1 完全不透明；调整后立即生效并保存。");
             if (notice.Length > 0) ImGui.TextWrapped(notice);
-            ImGui.TextWrapped("左侧快捷入口均匀排列；固定项靠右。宽度不足时自动换行。使用 /xltoolbar 可随时打开设置。");
-            ImGui.Separator();
+            PanelSection("显示与固定项");
             if (ImGui.BeginTable("sections", 3, ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.RowBg))
             {
                 try
@@ -139,7 +139,7 @@ internal sealed partial class UserInterface(Plugin plugin)
             }
             if (changed) plugin.Save();
         }
-        finally { ImGui.End(); }
+        finally { EndPanel(); }
     }
 
 }

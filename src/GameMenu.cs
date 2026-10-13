@@ -25,7 +25,7 @@ internal sealed partial class UserInterface
                 .ToArray();
             ImGui.SetNextItemWidth(-1);
             ImGui.InputTextWithHint("##game-search", "搜索游戏菜单…", ref gameWindowSearch, 128);
-            ImGui.TextDisabled("点击图标或名称打开；点击 ☆ 收藏，★ 取消。常用项会保存并显示在顶部。");
+
             var entries = GameMenuPolicy.Filter(gameMenuEntries, gameWindowSearch);
             var favorites = GameMenuPolicy.Favorites(entries, C.FavoriteGameCommands);
             var child = ImGui.BeginChild("game-menu-scroll", Vector2.Zero, false);
@@ -61,7 +61,7 @@ internal sealed partial class UserInterface
                 {
                     var favorite = C.FavoriteGameCommands.Contains(entry.Id);
                     var starWidth = Math.Max(ImGui.CalcTextSize("★").X + ImGui.GetStyle().FramePadding.X * 2, 26 * scale);
-                    var height = Math.Max(40 * scale, ImGui.GetFrameHeight());
+                    var height = Math.Max(48 * scale, ImGui.GetFrameHeight());
                     var width = Math.Max(1, ImGui.GetContentRegionAvail().X - starWidth - ImGui.GetStyle().ItemSpacing.X);
                     var pos = ImGui.GetCursorScreenPos();
                     var enabled = C.NativeInteractions && GameBridge.MainCommandEnabled(entry.Id);
@@ -69,8 +69,7 @@ internal sealed partial class UserInterface
                     var clicked = ImGui.InvisibleButton("##open", new Vector2(width, height));
                     var hovered = ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled);
                     var draw = ImGui.GetWindowDrawList();
-                    if (hovered && enabled)
-                        draw.AddRectFilled(pos, pos + new Vector2(width, height), ImGui.ColorConvertFloat4ToU32(new Vector4(C.Tint, .2f)), 4 * scale);
+                    draw.AddRectFilled(pos, pos + new Vector2(width, height), ImGui.ColorConvertFloat4ToU32(new Vector4(C.Tint, hovered && enabled ? .28f : .09f)), 4 * scale);
                     draw.PushClipRect(pos, pos + new Vector2(width, height), true);
                     var iconSize = 36 * scale;
                     var texture = entry.Icon == 0 ? null : Plugin.Textures.GetFromGameIcon(new GameIconLookup(entry.Icon)).GetWrapOrDefault();
