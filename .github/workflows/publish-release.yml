@@ -1,0 +1,32 @@
+name: Publish verified plugin package
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+concurrency:
+  group: xltoolbar-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Check package hashes
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS.txt
+      - name: Check plugin repository
+        run: python3 tools/repository.py --check
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          with open('pluginmaster.json') as f:
+              entry = json.load(f)[0]
+          assert os.environ['RELEASE_TAG'] == 'v' + entry['AssemblyVersion'].removesuffix('.0')
+          PY
+          gh release create "$RELEASE_TAG" dist/XLToolbar.zip dist/SHA256SUMS.txt --verify-tag --title "XLToolbar $RELEASE_TAG" --notes-file RELEASE_NOTES.md --latest

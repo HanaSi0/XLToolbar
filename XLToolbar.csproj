@@ -1,0 +1,15 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>0.1.0</Version>
+    <Author>HanaSi0</Author>
+    <Name>XLToolbar</Name>
+    <Punchline>独立的游戏顶部快捷工具条。</Punchline>
+    <Description>游戏图标快捷入口、职业套装、传送、货币、插件与指令收纳，以及可固定的状态信息。</Description>
+    <RepoUrl>https://github.com/HanaSi0/XLToolbar</RepoUrl>
+    <Tags>ui;toolbar</Tags>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup><Compile Remove="tests/**/*.cs" /></ItemGroup>
+</Project>
