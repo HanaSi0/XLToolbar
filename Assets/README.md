@@ -1,18 +1,14 @@
-# Toolbar icon atlas
+# Flat toolbar icon atlas
 
-Original artwork generated for XLToolbar: pale ivory/ice blue, transparent background, matching charcoal outlines.
+Original monochrome artwork generated for XLToolbar. Uniform pale ice-white, flat silhouettes, transparent background, no gradients or 3D effects.
 
-`toolbar-icons.png` is embedded as `XLToolbar.ToolbarIcons.png`. It is loaded through Dalamud's shared texture provider; the seven toolbar entries never fall back to native game textures.
+`toolbar-icons.png` is embedded as `XLToolbar.ToolbarIcons.png`, and loaded through Dalamud's shared texture provider.
 
-4 columns × 2 rows, read in row-major order:
+4 columns × 4 rows, row-major:
 
-1. Effects: magic sparks.
-2. Equipment durability: shield and durability meter.
-3. Job switching: crossed sword/staff and switching arrows.
-4. World map: folded map and location pin.
-5. Inventory: satchel.
-6. Quest list: scroll and checkmark.
-7. Currency: coin stack.
-8. Unused.
+1. Effects; tribes; online status; durability.
+2. Jobs; teleport; map; inventory.
+3. Quests; DTR; game menu; currency.
+4. FPS; volume; clock; settings.
 
-UV coordinates are defined in `src/ToolbarIconAtlas.cs`. The shared texture is owned by the provider. While it loads, existing font glyphs provide a fallback. The game menu window continues to use native game icons.
+`src/ToolbarIconAtlas.cs` defines UV coordinates. All toolbar icons use this atlas. The shared texture is provider-owned; loading frames reserve icon space without substituting a different icon family. Independent game menus continue to use native menu icons.

@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Textures;
 using Dalamud.Game.Gui.Dtr;
@@ -85,42 +84,6 @@ internal sealed partial class UserInterface
     }
 
     private sealed record TopItem(string Label,System.Action? Click=null,string? Tooltip=null,System.Action? RightClick=null,string? Key=null);
-    private readonly Dictionary<string,uint> topIconCache=[];
-    private readonly HashSet<string> topIconFailures=[];
-    private uint TopGameIcon(string key)
-    {
-        try{return ResolveTopGameIcon(key);}
-        catch(Exception ex)
-        {
-            if(topIconFailures.Add(key))Plugin.Log.Warning(ex,"读取顶部图标失败，使用内置图标：{Key}",key);
-            return 0;
-        }
-    }
-    private uint ResolveTopGameIcon(string key)
-    {
-        if(key=="jobs")return Plugin.Objects.LocalPlayer is {} p&&p.ClassJob.RowId>0&&p.ClassJob.IsValid?62100+p.ClassJob.RowId:0;
-        if(key=="online")return Plugin.Objects.LocalPlayer is {} onlinePlayer&&onlinePlayer.OnlineStatus.IsValid?onlinePlayer.OnlineStatus.Value.Icon:0;
-        if(topIconCache.TryGetValue(key,out var cached))return cached;
-        var command=key switch {"equipment"=>2u,"timers"=>5u,"currency"=>66u,"teleport"=>35u,"map" or "zone"=>16u,"inventory"=>10u,"quests"=>4u,_=>0u};
-        uint icon=command==0?0:(uint)Math.Max(0,Plugin.Data.GetExcelSheet<MainCommand>().GetRowOrDefault(command)?.Icon??0);
-        if(key=="currency")icon=Plugin.Data.GetExcelSheet<Item>().GetRowOrDefault(1)?.Icon??icon;
-        if(key is "tribes" or "effects")
-        {
-            var names=key=="tribes"?new[]{"部族","蛮族","Tribal","Tribe"}:new[]{"角色设置","Character Configuration"};
-            icon=TopIconPolicy.Find(Plugin.Data.GetExcelSheet<MainCommand>(),r=>names.Any(n=>r.Name.ToString().Contains(n,StringComparison.OrdinalIgnoreCase)),r=>r.Icon);
-        }
-        topIconCache[key]=icon;return icon;
-    }
-    private FontAwesomeIcon TopFallback(string key)=>key switch
-    {
-        "effects"=>FontAwesomeIcon.Magic,"tribes"=>FontAwesomeIcon.Users,"online"=>FontAwesomeIcon.User,
-        "equipment"=>FontAwesomeIcon.Hammer,"jobs"=>FontAwesomeIcon.ShieldAlt,"timers" or "clock"=>FontAwesomeIcon.Clock,
-        "currency"=>FontAwesomeIcon.Coins,"teleport"=>FontAwesomeIcon.Bolt,"map"=>FontAwesomeIcon.Map,
-        "plugins" or "dtr"=>FontAwesomeIcon.PuzzlePiece,"commands"=>FontAwesomeIcon.Terminal,
-        "inventory"=>FontAwesomeIcon.ShoppingBag,"quests"=>FontAwesomeIcon.Scroll,"zone"=>FontAwesomeIcon.Globe,
-        "fps"=>FontAwesomeIcon.TachometerAlt,"sound"=>FontAwesomeIcon.VolumeUp,
-        "lock"=>C.LockWindows?FontAwesomeIcon.Lock:FontAwesomeIcon.LockOpen,_=>FontAwesomeIcon.Cog,
-    };
     private static string FitTopLabel(string text,float width)
     {
         if(ImGui.CalcTextSize(text).X<=width)return text;
@@ -144,6 +107,7 @@ internal sealed partial class UserInterface
         var left=layoutLeft;var right=layoutRight;var plan=cachedTopLayout!;
         var rowHeight=Math.Max(ImGui.GetFontSize(),C.TopIcons?iconSize:0)+C.TopRowPadding*2*scale;
         ImGui.SetNextWindowPos(viewport.Pos);ImGui.SetNextWindowSize(new(viewport.Size.X,plan.Rows*rowHeight+8*scale));
+        ImGui.PushStyleColor(ImGuiCol.WindowBg,new Vector4(C.ToolbarBackgroundColor,C.ToolbarBackgroundOpacity));
         var visible=ImGui.Begin("##XLToolbarTop",ImGuiWindowFlags.NoDecoration|ImGuiWindowFlags.NoMove|ImGuiWindowFlags.NoSavedSettings|ImGuiWindowFlags.NoScrollbar|ImGuiWindowFlags.NoScrollWithMouse);
         try
         {
@@ -164,17 +128,9 @@ internal sealed partial class UserInterface
                 {
                     var iconPos=new Vector2(x,pos.Y+(rowHeight-iconSize)/2);
                     var custom=ToolbarIconAtlas.TryGetUv(item.Key??"",out var uvMin,out var uvMax);
-                    var id=custom?0:TopGameIcon(item.Key??"");
-                    var texture=custom
-                        ? (customToolbarTexture??=Plugin.Textures.GetFromManifestResource(typeof(Plugin).Assembly,ToolbarIconAtlas.ResourceName)).GetWrapOrDefault()
-                        : id==0?null:Plugin.Textures.GetFromGameIcon(new GameIconLookup(id)).GetWrapOrDefault();
-                    if(texture is not null)
-                        draw.AddImage(texture.Handle,iconPos,iconPos+new Vector2(iconSize),custom?uvMin:Vector2.Zero,custom?uvMax:Vector2.One);
-                    else using(Plugin.Interface.UiBuilder.IconFontHandle.Push())
-                    {
-                        var symbol=TopFallback(item.Key??"").ToIconString();var iconWidth=ImGui.CalcTextSize(symbol).X;
-                        draw.AddText(new Vector2(iconPos.X+(iconSize-iconWidth)/2,pos.Y+(rowHeight-ImGui.GetFontSize())/2),0xfff2e8dc,symbol);
-                    }
+                    var texture=(customToolbarTexture??=Plugin.Textures.GetFromManifestResource(typeof(Plugin).Assembly,ToolbarIconAtlas.ResourceName)).GetWrapOrDefault();
+                    if(custom&&texture is not null)
+                        draw.AddImage(texture.Handle,iconPos,iconPos+new Vector2(iconSize),uvMin,uvMax);
                     x+=iconSize+5*scale;
                 }
                 DrawOutlinedText(draw,new Vector2(x,pos.Y+(rowHeight-ImGui.GetFontSize())/2),ImGui.ColorConvertFloat4ToU32(new Vector4(C.ForegroundColor,1)),text);
@@ -183,6 +139,6 @@ internal sealed partial class UserInterface
                 if(clicked)item.Click?.Invoke();ImGui.PopID();
             }
         }
-        finally{ImGui.End();}
+        finally{ImGui.End();ImGui.PopStyleColor();}
     }
 }

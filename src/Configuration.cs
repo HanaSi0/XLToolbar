@@ -16,6 +16,8 @@ public sealed class Configuration : IPluginConfiguration
     public float TopRowPadding { get; set; } = 5;
     public float TopMaxLabelWidth { get; set; } = 180;
     public bool Rounded { get; set; } = true;
+    public Vector3 ToolbarBackgroundColor { get; set; } = new(.06f, .08f, .1f);
+    public float ToolbarBackgroundOpacity { get; set; } = .8f;
     public Vector3 Tint { get; set; } = new(.39f, .77f, .73f);
     public Vector3 ForegroundColor { get; set; } = new(.95f, .97f, 1);
     public Dictionary<string, bool> TopPinned { get; set; } = new()
@@ -34,6 +36,8 @@ public sealed class Configuration : IPluginConfiguration
     public void Normalize()
     {
         FavoriteGameCommands ??= [];
+        ToolbarBackgroundOpacity = Bound(ToolbarBackgroundOpacity, 0, 1, .8f);
+        ToolbarBackgroundColor = new(Bound(ToolbarBackgroundColor.X, 0, 1, .06f), Bound(ToolbarBackgroundColor.Y, 0, 1, .08f), Bound(ToolbarBackgroundColor.Z, 0, 1, .1f));
         TopPinned ??= [];
         TopSections ??= [];
         if (Version < 2)

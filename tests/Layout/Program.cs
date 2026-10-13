@@ -54,7 +54,7 @@ Check(GameMenuPolicy.Filter(menu, "不存在").Length == 0, "No-match menu searc
 Check(GameMenuPolicy.Favorites(menu, new HashSet<uint> { 3, 1, 999 }).Select(e => e.Id).SequenceEqual(new uint[] { 1, 3 }), "Favorite IDs, order or stale IDs mishandled");
 Check(GameMenuPolicy.Favorites(GameMenuPolicy.Filter(menu, "物品"), new HashSet<uint> { 1, 3 }).Single().Id == 3, "Favorite search failed");
 Check(GameMenuPolicy.Favorites(menu, new HashSet<uint>()).Length == 0, "Empty favorites failed");
-var customKeys = new[] { "effects", "equipment", "jobs", "map", "inventory", "quests", "currency" };
+var customKeys = new[] { "effects", "tribes", "online", "equipment", "jobs", "teleport", "map", "inventory", "quests", "dtr", "gamemenu", "currency", "fps", "sound", "clock", "settings" };
 var regions = new HashSet<(System.Numerics.Vector2, System.Numerics.Vector2)>();
 foreach (var key in customKeys)
 {
@@ -62,6 +62,5 @@ foreach (var key in customKeys)
     Check(min.X >= 0 && min.Y >= 0 && max.X <= 1 && max.Y <= 1 && max.X > min.X && max.Y > min.Y, "Invalid atlas region");
     Check(regions.Add((min, max)), "Duplicated toolbar icon region");
 }
-Check(!ToolbarIconAtlas.TryGetUv("online", out _, out _), "Existing icon replaced");
-Check(!ToolbarIconAtlas.TryGetUv("dtr", out _, out _), "External DTR icon replaced");
+Check(!ToolbarIconAtlas.TryGetUv("unknown", out _, out _), "Unknown icon mapped to unrelated artwork");
 Console.WriteLine($"Passed {checks} assertions: wrapping, pinning, bounds, non-overlap, and missing icon fallback.");

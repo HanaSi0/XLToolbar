@@ -30,7 +30,7 @@ internal sealed partial class UserInterface(Plugin plugin)
         effectsOpen = tribesOpen = onlineOpen = jobsOpen = equipmentOpen = currencyOpen = volumeOpen = false;
         commandsOpen = teleportOpen = gameWindowsOpen = false;
         gearsets.Clear(); currencies.Clear(); teleportRows.Clear(); currencyRead = default;
-        notice = ""; topIconCache.Clear(); gameMenuEntries = null;
+        notice = ""; gameMenuEntries = null;
     }
 
     internal void Draw()
@@ -107,6 +107,11 @@ internal sealed partial class UserInterface(Plugin plugin)
             if (ImGui.SliderFloat("间距", ref gap, 0, 24)) { C.TopGap = gap; changed = true; }
             if (ImGui.SliderFloat("上下留白", ref padding, 2, 14)) { C.TopRowPadding = padding; changed = true; }
             if (ImGui.SliderFloat("文字最大宽度", ref width, 60, 300)) { C.TopMaxLabelWidth = width; changed = true; }
+            var background = C.ToolbarBackgroundColor;
+            if (ImGui.ColorEdit3("工具条背景颜色", ref background)) { C.ToolbarBackgroundColor = background; changed = true; }
+            var opacity = C.ToolbarBackgroundOpacity;
+            if (ImGui.SliderFloat("背景不透明度", ref opacity, 0, 1, "%.2f")) { C.ToolbarBackgroundOpacity = opacity; changed = true; }
+            ImGui.TextDisabled("0 完全透明，1 完全不透明；调整后立即生效并保存。");
             if (notice.Length > 0) ImGui.TextWrapped(notice);
             ImGui.TextWrapped("左侧快捷入口均匀排列；固定项靠右。宽度不足时自动换行。使用 /xltoolbar 可随时打开设置。");
             ImGui.Separator();
