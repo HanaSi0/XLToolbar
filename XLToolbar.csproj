@@ -1,7 +1,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Author>HanaSi0</Author>
     <Name>XLToolbar</Name>
     <Punchline>独立的游戏顶部快捷工具条。</Punchline>
@@ -11,5 +11,8 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
-  <ItemGroup><Compile Remove="tests/**/*.cs" /></ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <EmbeddedResource Include="Assets/toolbar-icons.png" LogicalName="XLToolbar.ToolbarIcons.png" />
+  </ItemGroup>
 </Project>

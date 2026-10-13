@@ -13,6 +13,7 @@ using Lumina.Excel.Sheets;
 namespace XLToolbar;
 internal sealed partial class UserInterface
 {
+    private ISharedImmediateTexture? customToolbarTexture;
     private List<TopItem>? cachedTopItems;
     private DateTime nextTopRefresh;
     private List<TopItem>? layoutTopItems;
@@ -161,9 +162,14 @@ internal sealed partial class UserInterface
                 var x=pos.X+Math.Max(padding,(slot.Width-content)/2);
                 if(C.TopIcons)
                 {
-                    var iconPos=new Vector2(x,pos.Y+(rowHeight-iconSize)/2);var id=TopGameIcon(item.Key??"");
-                    var texture=id==0?null:Plugin.Textures.GetFromGameIcon(new GameIconLookup(id)).GetWrapOrDefault();
-                    if(texture is not null)draw.AddImage(texture.Handle,iconPos,iconPos+new Vector2(iconSize));
+                    var iconPos=new Vector2(x,pos.Y+(rowHeight-iconSize)/2);
+                    var custom=ToolbarIconAtlas.TryGetUv(item.Key??"",out var uvMin,out var uvMax);
+                    var id=custom?0:TopGameIcon(item.Key??"");
+                    var texture=custom
+                        ? (customToolbarTexture??=Plugin.Textures.GetFromManifestResource(typeof(Plugin).Assembly,ToolbarIconAtlas.ResourceName)).GetWrapOrDefault()
+                        : id==0?null:Plugin.Textures.GetFromGameIcon(new GameIconLookup(id)).GetWrapOrDefault();
+                    if(texture is not null)
+                        draw.AddImage(texture.Handle,iconPos,iconPos+new Vector2(iconSize),custom?uvMin:Vector2.Zero,custom?uvMax:Vector2.One);
                     else using(Plugin.Interface.UiBuilder.IconFontHandle.Push())
                     {
                         var symbol=TopFallback(item.Key??"").ToIconString();var iconWidth=ImGui.CalcTextSize(symbol).X;
