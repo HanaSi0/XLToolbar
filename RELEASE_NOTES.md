@@ -1,10 +1,5 @@
-XLToolbar 0.1.7
+XLToolbar 0.1.8
 
-更新插件简介，让功能介绍更简洁易懂。
+在插件简介中注明游戏内使用的在线仓库链接，方便复制并添加到自定义插件仓库。
 
-常用功能，一栏直达。
-
-FF14 顶部快捷工具栏，集中显示常用功能和游戏状态。支持外观调整、菜单搜索和常用项收藏。
-
-插件库：
 https://raw.githubusercontent.com/HanaSi0/XLToolbar/main/pluginmaster.json

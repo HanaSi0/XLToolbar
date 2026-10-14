@@ -3,8 +3,8 @@
     "Author": "HanaSi0",
     "Name": "XLToolbar",
     "InternalName": "XLToolbar",
-    "AssemblyVersion": "0.1.7.0",
-    "Description": "FF14 顶部快捷工具栏，集中显示常用功能和游戏状态。支持外观调整、菜单搜索和常用项收藏。",
+    "AssemblyVersion": "0.1.8.0",
+    "Description": "FF14 顶部快捷工具栏，集中显示常用功能和游戏状态。支持外观调整、菜单搜索和常用项收藏。 游戏内自定义插件仓库链接：https://raw.githubusercontent.com/HanaSi0/XLToolbar/main/pluginmaster.json",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/HanaSi0/XLToolbar",
     "Tags": [
@@ -18,11 +18,11 @@
     "LoadPriority": 0,
     "Punchline": "常用功能，一栏直达。",
     "AcceptsFeedback": true,
-    "DownloadLinkInstall": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.7/XLToolbar.zip",
-    "DownloadLinkUpdate": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.7/XLToolbar.zip",
-    "DownloadLinkTesting": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.7/XLToolbar.zip",
+    "DownloadLinkInstall": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.8/XLToolbar.zip",
+    "DownloadLinkUpdate": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.8/XLToolbar.zip",
+    "DownloadLinkTesting": "https://github.com/HanaSi0/XLToolbar/releases/download/v0.1.8/XLToolbar.zip",
     "IsHide": false,
     "IsTestingExclusive": false,
-    "LastUpdate": 1791982314
+    "LastUpdate": 1791983180
   }
 ]

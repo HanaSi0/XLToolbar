@@ -1,11 +1,11 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.1.7</Version>
+    <Version>0.1.8</Version>
     <Author>HanaSi0</Author>
     <Name>XLToolbar</Name>
     <Punchline>常用功能，一栏直达。</Punchline>
-    <Description>FF14 顶部快捷工具栏，集中显示常用功能和游戏状态。支持外观调整、菜单搜索和常用项收藏。</Description>
+    <Description>FF14 顶部快捷工具栏，集中显示常用功能和游戏状态。支持外观调整、菜单搜索和常用项收藏。 游戏内自定义插件仓库链接：https://raw.githubusercontent.com/HanaSi0/XLToolbar/main/pluginmaster.json</Description>
     <RepoUrl>https://github.com/HanaSi0/XLToolbar</RepoUrl>
     <Tags>ui;toolbar</Tags>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
